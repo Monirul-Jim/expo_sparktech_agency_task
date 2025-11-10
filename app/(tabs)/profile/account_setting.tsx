@@ -8,7 +8,7 @@ export default function AccountSettingScreen() {
         <SafeAreaView style={styles.container}>
             {/* HEADER */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.push("/(tabs)/profile")}>
+                <TouchableOpacity onPress={() => router.push('/profile')}>
                     <Ionicons name="chevron-back" size={26} color="#7ED957" />
                 </TouchableOpacity>
 
@@ -20,7 +20,7 @@ export default function AccountSettingScreen() {
 
             {/* CARD OPTIONS */}
             <View style={styles.settingBox}>
-                <TouchableOpacity style={styles.option} onPress={() => router.push("/change-password")}>
+                <TouchableOpacity style={styles.option} onPress={() => router.push("/(tabs)/profile/change_password")}>
                     <View style={styles.optionLeft}>
                         <Ionicons name="lock-closed-outline" size={20} color="#7ED957" />
                         <Text style={styles.optionText}>Change Password</Text>

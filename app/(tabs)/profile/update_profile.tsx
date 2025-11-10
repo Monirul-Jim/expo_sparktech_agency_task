@@ -79,7 +79,7 @@ export default function UpdateProfile() {
 
       await updateUser(formData).unwrap();
       Alert.alert("Success", "Profile Updated Successfully!");
-      router.push('/(tabs)/profile_details');
+      router.push('/(tabs)/profile/profile_details');
       //   onPress={() => router.push("/(tabs)/profile")}
     } catch (err: any) {
       Alert.alert("Error", err?.data?.message || "Update failed");
@@ -91,7 +91,7 @@ export default function UpdateProfile() {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.push("/(tabs)/profile/profile_details")}>
           <Ionicons name="chevron-back" size={28} color="#7ED957" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Profile</Text>

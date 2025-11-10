@@ -29,8 +29,9 @@ export default function TabLayout() {
         tabBar={(props) => <CustomTabBar {...props} />}
       >
         <Tabs.Screen name="index" options={{ title: "Home" }} />
-        <Tabs.Screen name="add_task" options={{ title: "Add Task" }} />
-        <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+        <Tabs.Screen name="task/index" options={{ title: "Add Task" }} />
+        <Tabs.Screen name="profile/index" options={{ title: "Profile" }} />
+
       </Tabs>
       {/* <View style={styles.container}>
         <View style={{ flex: 1 }}>

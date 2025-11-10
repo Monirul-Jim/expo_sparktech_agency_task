@@ -68,9 +68,9 @@ export default function Profile() {
         <View style={styles.card}>
           <MenuItem
             label="My Profile"
-            onPress={() => router.push("/profile_details")}
+            onPress={() => router.push("/(tabs)/profile/profile_details")}
           />
-          <MenuItem label="Account Setting" onPress={() => router.push("/account_setting")} />
+          <MenuItem label="Account Setting" onPress={() => router.push("/(tabs)/profile/account_setting")} />
         </View>
 
         {/* Section Title */}
@@ -78,9 +78,9 @@ export default function Profile() {
 
         {/* Section 2 */}
         <View style={styles.card}>
-          <MenuItem label="Terms & Condition" onPress={() => { }} />
-          <MenuItem label="Privacy policy" onPress={() => { }} />
-          <MenuItem label="Help/Support" onPress={() => { }} />
+          <MenuItem label="Terms & Condition" onPress={() => router.push("/(tabs)/profile/term_condition")} />
+          <MenuItem label="Privacy policy" onPress={() => router.push("/(tabs)/profile/privacy_policy")} />
+          <MenuItem label="Help/Support" onPress={() => router.push("/(tabs)/profile/help_support")} />
           <MenuItem
             label="Log Out"
             onPress={() => {

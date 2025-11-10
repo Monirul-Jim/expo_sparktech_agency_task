@@ -10,6 +10,11 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useForm, Controller } from "react-hook-form";
 import { router } from "expo-router";
+type FormValues = {
+  current: string;
+  newPass: string;
+  confirm: string;
+};
 
 export default function ChangePasswordScreen() {
   const [show, setShow] = useState({
@@ -18,31 +23,34 @@ export default function ChangePasswordScreen() {
     confirm: false,
   });
 
-  const {
-    control,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm({
-    defaultValues: {
-      current: "",
-      newPass: "",
-      confirm: "",
-    },
-  });
-
+const {
+  control,
+  handleSubmit,
+  watch,
+  formState: { errors },
+} = useForm<FormValues>({
+  defaultValues: {
+    current: "",
+    newPass: "",
+    confirm: "",
+  },
+});
   const newPassword = watch("newPass");
 
-  const onSubmit = (data) => {
-    console.log("Submitted:", data);
-    // TODO: API call
-  };
+
+const onSubmit = (data: FormValues) => {
+  console.log("Submitted:", data);
+  // TODO: API call
+};
+
+
+
 
   return (
     <SafeAreaView style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.push("/(tabs)/profile/account_setting")}>
           <Ionicons name="chevron-back" size={26} color="#7ED957" />
         </TouchableOpacity>
 

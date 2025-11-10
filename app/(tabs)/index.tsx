@@ -1,98 +1,169 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
-
+import { useGetMeQuery } from '@/redux/api/authApi';
+import { useGetAllTasksQuery } from '@/redux/api/taskApi';
+import { useAppSelector } from '@/redux/hooks';
+import { RootState } from '@/redux/store';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Polygon } from "react-native-svg";
+import { router } from "expo-router";
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const token = useAppSelector((state: RootState) => state.auth.token)
+  const { data: users, error, isLoading, isFetching } = useGetMeQuery(
+    undefined,
+    { skip: !token }
+  );
+  const { data, isLoading: dLoading } = useGetAllTasksQuery(undefined, { skip: !token });
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  if (!token) {
+    return (
+      <SafeAreaView style={styles.center}>
+        <Text style={styles.noAuth}>Please login to view tasks.</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.center}>
+        <ActivityIndicator size="large" color="#7ED957" />
+      </SafeAreaView>
+    );
+  }
+  const tasks = data?.data?.myTasks || [];
+  const user = users?.data || {};
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Image
+          source={{
+            uri: user?.image
+              ? `http://23.239.111.165:8001/${user.image}`
+              : "https://i.pravatar.cc/150"
+          }}
+          style={styles.avatar}
+        />
+        <View>
+          <Text style={styles.welcome}>Hello {user?.firstName} {user?.lastName}</Text>
+          <Text style={styles.role}>Welcome to Task Manager</Text>
+        </View>
+      </View>
+
+      <Text style={styles.sectionTitle}>My Tasks</Text>
+
+      <FlatList
+        data={tasks}
+        keyExtractor={(item) => item._id}
+        contentContainerStyle={{ paddingHorizontal: 16 }}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.card}
+            onPress={() =>
+              router.push({
+                pathname: "/task/[id]",
+                params: { id: item._id }
+              })
+            }
+
+          >
+            {/* Background Shapes */}
+            <Svg style={styles.topShape} width="100" height="80">
+              <Polygon points="100,0 100,80 40,0" fill="#F5FDEB" />
+            </Svg>
+
+            <Svg style={styles.bottomShape} width="120" height="80">
+              <Polygon points="0,80 0,20 80,80" fill="#E9F7D6" />
+            </Svg>
+
+            {/* ICON ABOVE */}
+            <Image
+              source={require("@/assets/expo_image.png")}
+              style={styles.taskIcon}
+            />
+
+            {/* TEXT BELOW ICON */}
+            <Text style={styles.taskTitle}>{item.title}</Text>
+            <Text style={styles.taskDescription}>
+              {item.description.split(" ").length > 20
+                ? item.description.split(" ").slice(0, 20).join(" ") + "..."
+                : item.description}
+            </Text>
+
+
+          </TouchableOpacity>
+        )}
+      />
+    </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: { flex: 1, backgroundColor: "#fff" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  noAuth: { fontSize: 16, color: "gray" },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
   },
-  stepContainer: {
-    gap: 8,
+
+  avatar: { width: 48, height: 48, borderRadius: 24, marginRight: 12 },
+  welcome: { fontSize: 18, fontWeight: "600" },
+  role: { fontSize: 13, color: "gray" },
+
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginHorizontal: 16,
+    marginTop: 10,
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
+
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    paddingVertical: 18,
+    paddingHorizontal: 14,
+    marginBottom: 14,
+    overflow: "hidden",
+    position: "relative",
+    alignItems: "flex-start",
+    borderWidth: 1,
+    borderColor: "#E8F2E0",
+  },
+
+  taskIcon: {
+    width: 30,
+    height: 30,
+    marginBottom: 10,
+  },
+
+  taskTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#111",
+    marginBottom: 4,
+  },
+
+  taskDescription: {
+    fontSize: 13,
+    color: "#666",
+    maxWidth: "100%",
+    lineHeight: 18,
+  },
+
+
+  topShape: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+  },
+
+  bottomShape: {
+    position: "absolute",
     bottom: 0,
     left: 0,
-    position: 'absolute',
   },
 });

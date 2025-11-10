@@ -1,113 +1,3 @@
-// import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-// import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
-// import { Ionicons } from "@expo/vector-icons";
-// import { useGetMeQuery } from "@/redux/api/authApi";
-// import { useAppSelector } from "@/redux/hooks";
-// import { RootState } from "@/redux/store";
-// import { router } from "expo-router";
-
-// export default function ProfileDetails() {
-//     const insets = useSafeAreaInsets();
-//     const token = useAppSelector((state: RootState) => state.auth.token);
-//     const { data } = useGetMeQuery(undefined, { skip: !token });
-
-//     const user = data?.data;
-
-//     return (
-//         <SafeAreaView style={styles.safeArea}>
-//             {/* Header */}
-//             <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
-//                 <TouchableOpacity onPress={() => router.push("/(tabs)/profile")}>
-//                     <Ionicons name="chevron-back" size={28} color="#7ED957" />
-//                 </TouchableOpacity>
-
-
-//                 <Text style={styles.headerText}>My Profile</Text>
-
-//                 <TouchableOpacity onPress={() => router.push("/update_profile")}>
-//                     <Ionicons name="create-outline" size={22} color="#7ED957" />
-//                 </TouchableOpacity>
-//             </View>
-
-//             {/* Profile Picture */}
-//             <Image
-//                 source={{ uri: user?.avatar || "https://i.pravatar.cc/150" }}
-//                 style={styles.avatar}
-//             />
-
-//             {/* Name */}
-//             <Text style={styles.name}>
-//                 {user?.firstName} {user?.lastName}
-//             </Text>
-
-//             {/* Info Cards */}
-//             <View style={styles.infoContainer}>
-//                 <Info icon="person-circle-outline" label={`${user?.firstName} ${user?.lastName}`} />
-//                 <Info icon="mail-outline" label={user?.email} />
-//                 <Info icon="location-outline" label={user?.address || "No address provided"} />
-//             </View>
-//         </SafeAreaView>
-//     );
-// }
-
-// function Info({ icon, label }: { icon: any; label: string }) {
-//     return (
-//         <View style={styles.infoBox}>
-//             <Ionicons name={icon} size={18} color="#7ED957" style={{ marginRight: 8 }} />
-//             <Text style={styles.infoText}>{label}</Text>
-//         </View>
-//     );
-// }
-
-// const styles = StyleSheet.create({
-//     safeArea: {
-//         flex: 1,
-//         backgroundColor: "#F8FDF6",
-//         alignItems: "center",
-//     },
-//     header: {
-//         width: "90%",
-//         flexDirection: "row",
-//         justifyContent: "space-between",
-//         alignItems: "center",
-//         marginBottom: 15,
-//     },
-//     headerText: {
-//         fontSize: 18,
-//         fontWeight: "600",
-//         color: "#7ED957",
-//     },
-//     avatar: {
-//         width: 110,
-//         height: 110,
-//         borderRadius: 55,
-//         marginTop: 10,
-//         marginBottom: 12,
-//     },
-//     name: {
-//         fontSize: 20,
-//         fontWeight: "700",
-//         marginBottom: 25,
-//         color: "#222",
-//     },
-//     infoContainer: {
-//         width: "88%",
-//     },
-//     infoBox: {
-//         flexDirection: "row",
-//         alignItems: "center",
-//         backgroundColor: "#FFFFFF",
-//         borderRadius: 12,
-//         paddingVertical: 14,
-//         paddingHorizontal: 12,
-//         marginBottom: 12,
-//         elevation: 3,
-//     },
-//     infoText: {
-//         fontSize: 15,
-//         color: "#444",
-//     },
-// });
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   View,
@@ -159,13 +49,13 @@ export default function ProfileDetails() {
       >
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => router.push('/profile')}>
             <Ionicons name="chevron-back" size={28} color="#7ED957" />
           </TouchableOpacity>
 
           <Text style={styles.headerText}>My Profile</Text>
 
-          <TouchableOpacity onPress={() => router.push("/update_profile")}>
+          <TouchableOpacity onPress={() => router.push("/(tabs)/profile/update_profile")}>
             <Ionicons name="create-outline" size={22} color="#7ED957" />
           </TouchableOpacity>
         </View>

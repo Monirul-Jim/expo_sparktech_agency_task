@@ -7,8 +7,8 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
 
   const tabs = [
     { name: "index", label: "Home", icon: "home" },
-    { name: "add_task", label: "Add Task", icon: "add" },
-    { name: "profile", label: "Profile", icon: "person" },
+    { name: "task/index", label: "Add Task", icon: "add" },
+    { name: "profile/index", label: "Profile", icon: "person" },
   ];
 
   return (
