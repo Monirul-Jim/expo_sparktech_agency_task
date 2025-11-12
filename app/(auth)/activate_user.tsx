@@ -8,7 +8,8 @@ export default function ActivateUser() {
     const { email } = useLocalSearchParams();
     const [code, setCode] = useState(["", "", "", "", "", ""]);
     const inputsRef = useRef<(TextInput | null)[]>([]);
-    const [activateUser, { isLoading ,error}] = useActivatateUserMutation();
+    const [activateUser, { isLoading, error }] = useActivatateUserMutation();
+    console.log(error)
     const handleChange = (value: string, index: number) => {
         const copy = [...code];
         copy[index] = value.slice(-1);
@@ -32,8 +33,12 @@ export default function ActivateUser() {
 
         try {
             await activateUser({ email, code: finalCode }).unwrap();
-            // router.replace("/login");
+            console.log("✅ Activation response:");
+
+            router.replace("/login");
         } catch (err) {
+            console.log("❌ Activation error:", err);
+
             alert("Invalid code, try again.");
         }
     };

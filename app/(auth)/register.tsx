@@ -14,6 +14,18 @@ import { Ionicons } from "@expo/vector-icons";
 import Checkbox from "expo-checkbox";
 import { Stack, router } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { SerializedError } from "@reduxjs/toolkit";
+import WarningModal from "@/components/WarningModal/WarningModal";
+
+function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
+    return typeof error === "object" && error !== null && "status" in error;
+}
+
+function isSerializedError(error: unknown): error is SerializedError {
+    return typeof error === "object" && error !== null && "message" in error;
+}
+
 type RegisterFormValues = {
     firstName: string;
     lastName: string;
@@ -25,7 +37,11 @@ type RegisterFormValues = {
 };
 
 export default function RegisterScreen() {
-    const [registerUser, { isLoading, error, isSuccess }] = useRegisterUserMutation()
+    const [registerUser, { isLoading, error,isSuccess }] = useRegisterUserMutation()
+
+    const [showWarning, setShowWarning] = useState(false);
+    const [warningMsg, setWarningMsg] = useState("");
+
     const { control, handleSubmit, watch } = useForm<RegisterFormValues>({
         defaultValues: {
             firstName: "",
@@ -43,7 +59,7 @@ export default function RegisterScreen() {
     const [showConfirmPass, setShowConfirmPass] = useState(false);
     const password = watch("password");
     const confirmPassword = watch("confirmPassword");
-    // ✅ ADD THESE HERE
+    // // ✅ ADD THESE HERE
     useEffect(() => {
         if (isSuccess) {
             router.replace("/activate_user");  // Go to verification screen after success
@@ -52,20 +68,31 @@ export default function RegisterScreen() {
     useEffect(() => {
         if (!error) return;
 
-        // Check if error is FetchBaseQueryError type
-        if ("data" in error && error.data) {
-            const apiError = error.data as any;
+        let message = "Something went wrong. Please try again.";
 
-            if (apiError?.error?.includes("duplicate key")) {
-                alert("This email is already registered. Please login.");
-            } else {
-                alert(apiError?.message || "Registration failed.");
+        if (isFetchBaseQueryError(error)) {
+            // Handle network or backend errors
+            if (error.status === "FETCH_ERROR") {
+                const rawError = (error as { error?: string }).error;
+                message = rawError
+                    ? `${rawError}`
+                    : "Network error! Please check your internet connection.";
+            } else if (typeof error.data === "object" && error.data !== null) {
+                const data = error.data as { message?: string; error?: string };
+                if (data?.error?.includes("duplicate key")) {
+                    message = "This email is already registered. Please log in.";
+                } else if (data?.message) {
+                    message = data.message;
+                }
             }
-        } else {
-            // Fallback for SerializedError
-            alert("Something went wrong, please try again.");
+        } else if (isSerializedError(error)) {
+            message = error.message ?? message;
         }
+
+        setWarningMsg(message);
+        setShowWarning(true);
     }, [error]);
+
 
     // useEffect(() => {
     //     if (error) {
@@ -266,6 +293,13 @@ export default function RegisterScreen() {
                     </TouchableOpacity> */}
                 </ScrollView>
             </SafeAreaView>
+            <WarningModal
+                visible={showWarning}
+                message={warningMsg}
+                onConfirm={() => setShowWarning(false)}
+            />
+
+
         </>
     );
 }

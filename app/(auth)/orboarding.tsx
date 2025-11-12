@@ -110,42 +110,46 @@ const SLIDES = [
     title: "Manage Everything in One Place",
     description:
       "Create, categorize, and keep track of all your personal and work tasks effortlessly — right from your dashboard.",
-    image: require("../../assets/image1.jpg"),
+    image: require("../../assets/image1.png"),
   },
   {
     id: "2",
     title: "Focus on What Matters Most",
     description:
       "Set priorities, add deadlines, and sort tasks by importance so you can tackle what truly moves you forward.",
-    image: require("../../assets/image2.jpg"),
+    image: require("../../assets/image2.png"),
   },
   {
     id: "3",
     title: "Visualize Progress, Stay on Track",
     description:
       "Monitor completed tasks, ongoing projects, and deadlines — all clearly displayed in one place.",
-    image: require("../../assets/image3.jpg"),
+    image: require("../../assets/image3.png"),
   },
 ];
-
 export default function Onboarding() {
   const scrollX = useSharedValue(0);
+  const ref = useRef<any>(null);
 
   const scrollHandler = useAnimatedScrollHandler((event) => {
     scrollX.value = event.contentOffset.x;
   });
 
-  const handleNext = (index: number) => {
-    if (index === SLIDES.length - 1) {
-      router.push("/login");
+  const [currentIndex, setCurrentIndex] = React.useState(0);
 
+  const handleNext = () => {
+    if (currentIndex === SLIDES.length - 1) {
+      router.push("/login");
     } else {
-      ref.current?.scrollTo({ x: (index + 1) * width, animated: true });
+      ref.current?.scrollTo({ x: (currentIndex + 1) * width, animated: true });
     }
   };
 
-  const ref = useRef<any>(null);
-
+  const onScroll = (event: any) => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / width);
+    setCurrentIndex(index);
+    scrollX.value = event.nativeEvent.contentOffset.x;
+  };
 
   return (
     <>
@@ -157,7 +161,7 @@ export default function Onboarding() {
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          onScroll={scrollHandler}
+          onScroll={onScroll}
           scrollEventThrottle={16}
         >
           {SLIDES.map((item, index) => {
@@ -190,15 +194,17 @@ export default function Onboarding() {
                     return <Animated.View key={i} style={[styles.dot, dotStyle]} />;
                   })}
                 </View>
-                <TouchableOpacity style={styles.button} onPress={() => handleNext(index)}>
-                  <Text style={styles.buttonText}>
-                    {index === SLIDES.length - 1 ? "Continue" : "Next"}
-                  </Text>
-                </TouchableOpacity>
               </View>
             );
           })}
         </Animated.ScrollView>
+
+        {/* Button at the bottom */}
+        <TouchableOpacity style={styles.button} onPress={handleNext}>
+          <Text style={styles.buttonText}>
+            {currentIndex === SLIDES.length - 1 ? "Continue >" : "Next >"}
+          </Text>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.skip} onPress={() => router.replace("/login")}>
           <Text style={{ color: "#6C757D" }}>Skip</Text>
@@ -250,9 +256,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   button: {
-    backgroundColor: "#8BC34A",
+    position: "absolute",
+    bottom: 40,
+    left: 24,
+    right: 24,
+    backgroundColor: "#84C000",
     paddingVertical: 14,
-    width: "100%",
     borderRadius: 10,
     alignItems: "center",
   },

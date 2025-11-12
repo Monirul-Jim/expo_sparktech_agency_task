@@ -7,16 +7,18 @@ import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { logout } from "@/redux/feature/authSlice";
+import { useState } from "react";
+import WarningModal from "@/components/WarningModal/WarningModal";
 
 export default function Profile() {
+  const [modalVisible, setModalVisible] = useState(false); // for logout confirmation
+
   const token = useAppSelector((state: RootState) => state.auth.token);
-  const { data, error, isLoading, isFetching } = useGetMeQuery(
-    undefined,
-    { skip: !token }
-  );
+  const { data, error, isLoading, isFetching } = useGetMeQuery(undefined, { skip: !token });
   const dispatch = useAppDispatch();
 
   const user = data?.data;
+
   if (isLoading || isFetching) {
     return (
       <View style={styles.center}>
@@ -33,6 +35,7 @@ export default function Profile() {
       </View>
     );
   }
+
   if (error) {
     console.error("Profile fetch error:", error);
     return (
@@ -43,20 +46,28 @@ export default function Profile() {
       </View>
     );
   }
+
+  const handleLogoutConfirm = () => {
+    dispatch(logout());
+    router.replace("/login");
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={styles.header}></View>
+
+        {/* Avatar overlapping header */}
+        <View style={styles.avatarContainer}>
           <Image
             source={{
               uri: user?.image
-                ? `http://23.239.111.165:8001/${user.image}`  // show uploaded image
-                : "https://i.pravatar.cc/150"                // fallback default avatar
+                ? `http://23.239.111.165:8001/${user.image}`
+                : "https://i.pravatar.cc/150",
             }}
             style={styles.avatar}
           />
-
         </View>
 
         {/* User Name */}
@@ -70,7 +81,10 @@ export default function Profile() {
             label="My Profile"
             onPress={() => router.push("/(tabs)/profile/profile_details")}
           />
-          <MenuItem label="Account Setting" onPress={() => router.push("/(tabs)/profile/account_setting")} />
+          <MenuItem
+            label="Account Setting"
+            onPress={() => router.push("/(tabs)/profile/account_setting")}
+          />
         </View>
 
         {/* Section Title */}
@@ -78,19 +92,32 @@ export default function Profile() {
 
         {/* Section 2 */}
         <View style={styles.card}>
-          <MenuItem label="Terms & Condition" onPress={() => router.push("/(tabs)/profile/term_condition")} />
-          <MenuItem label="Privacy policy" onPress={() => router.push("/(tabs)/profile/privacy_policy")} />
-          <MenuItem label="Help/Support" onPress={() => router.push("/(tabs)/profile/help_support")} />
+          <MenuItem
+            label="Terms & Condition"
+            onPress={() => router.push("/(tabs)/profile/term_condition")}
+          />
+          <MenuItem
+            label="Privacy policy"
+            onPress={() => router.push("/(tabs)/profile/privacy_policy")}
+          />
+          <MenuItem
+            label="Help/Support"
+            onPress={() => router.push("/(tabs)/profile/help_support")}
+          />
           <MenuItem
             label="Log Out"
-            onPress={() => {
-              dispatch(logout());       // Clear Redux user + token
-              router.replace("/login"); // Redirect to login
-            }}
+            onPress={() => setModalVisible(true)}
           />
-
         </View>
       </ScrollView>
+
+      {/* Logout Confirmation */}
+      <WarningModal
+        visible={modalVisible}
+        message="Are you sure you want to log out?"
+        onConfirm={handleLogoutConfirm}
+        onCancel={() => setModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -104,32 +131,49 @@ function MenuItem({ label, onPress }: { label: string; onPress: () => void }) {
     </TouchableOpacity>
   );
 }
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
 
   header: {
     backgroundColor: "#7ED957",
-    height: 160,
+    height: 120, // slightly less since avatar overlaps
     borderBottomLeftRadius: 80,
     borderBottomRightRadius: 80,
-    justifyContent: "center",
-    alignItems: "center",
   },
+
+  avatarContainer: {
+    position: "absolute",
+    top: 60, // half of header height
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    zIndex: 2,
+  },
+
   avatar: {
-    width: 90,
-    height: 90,
+    width: 100,
+    height: 100,
     borderRadius: 50,
     borderWidth: 3,
     borderColor: "#fff",
-    marginTop: 20,
+    backgroundColor: "#fff",
+    // optional shadow for better pop effect
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 4,
   },
+
   name: {
+    marginTop: 60, // leave space for avatar
     alignSelf: "center",
     fontSize: 22,
     fontWeight: "600",
-    marginTop: 10,
     marginBottom: 20,
   },
+
   sectionTitle: {
     marginLeft: 24,
     marginTop: 24,
@@ -137,6 +181,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6C757D",
   },
+
   card: {
     backgroundColor: "#fff",
     marginHorizontal: 24,
@@ -147,25 +192,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
   },
+
   menuRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 14,
     paddingHorizontal: 16,
   },
+
   menuLabel: { marginLeft: 10, flex: 1, fontSize: 15 },
+
   center: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
-  message: {
-    fontSize: 18,
-    color: '#888',
-  },
-  errorText: {
-    fontSize: 18,
-    color: 'red',
-    textAlign: 'center',
-  },
+
+  message: { fontSize: 18, color: "#888" },
+
+  errorText: { fontSize: 18, color: "red", textAlign: "center" },
 });

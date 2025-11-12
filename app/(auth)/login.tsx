@@ -8,15 +8,27 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLoginUserMutation } from "@/redux/api/authApi";
 import { useAppDispatch } from "@/redux/hooks";
 import { setUser } from "@/redux/feature/authSlice";
+import WarningModal from "@/components/WarningModal/WarningModal";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { SerializedError } from "@reduxjs/toolkit";
 interface FormData {
   email: string;
   password: string;
 }
+function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
+  return typeof error === "object" && error != null && "status" in error;
+}
+
+function isSerializedError(error: unknown): error is SerializedError {
+  return typeof error === "object" && error != null && "message" in error;
+}
 
 export default function LoginScreen() {
   const dispatch = useAppDispatch();
-  const [loginUser, { isLoading, error, isSuccess }] = useLoginUserMutation();
+  const [loginUser] = useLoginUserMutation();
   const [remember, setRemember] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMsg, setWarningMsg] = useState("");
 
   const { control, handleSubmit } = useForm<FormData>({
     defaultValues: {
@@ -26,12 +38,51 @@ export default function LoginScreen() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const onSubmit: SubmitHandler<FormData> = async (data) => {
+  // const onSubmit: SubmitHandler<FormData> = async (data) => {
+  //   const res = await loginUser(data).unwrap();
+  //   const user = res?.data?.user;
+  //   dispatch(setUser({ user, token: res?.data?.token }))
+  //   router.replace("/(tabs)");
+  // };
+
+const onSubmit: SubmitHandler<FormData> = async (data) => {
+  try {
     const res = await loginUser(data).unwrap();
     const user = res?.data?.user;
-    dispatch(setUser({ user, token: res?.data?.token }))
+    dispatch(setUser({ user, token: res?.data?.token }));
     router.replace("/(tabs)");
-  };
+  } catch (err: unknown) {
+    let message = "Something went wrong. Please try again.";
+
+    if (isFetchBaseQueryError(err)) {
+      const fetchError = err as FetchBaseQueryError;
+
+      // 🧩 1️⃣ Handle network-level failures
+      if (fetchError.status === "FETCH_ERROR") {
+        const rawError = (fetchError as { error?: string }).error;
+        message = rawError
+          ? rawError
+          : "Network error! Please check your internet connection.";
+      }
+
+      // 🧩 2️⃣ Handle backend JSON errors
+      else if (typeof fetchError.data === "object" && fetchError.data !== null) {
+        const data = fetchError.data as { error?: string; message?: string; status?: string };
+        if (data.error) message = data.error; // 👈 handles “No user found”
+        else if (data.message) message = data.message;
+        else if (data.status) message = data.status;
+      }
+    } else if (isSerializedError(err)) {
+      message = err.message ?? message;
+    }
+
+    setWarningMsg(message);
+    setShowWarning(true);
+    console.log("⚠️ Error:", message);
+  }
+};
+
+
 
   return (
     <>
@@ -115,6 +166,12 @@ export default function LoginScreen() {
             {" "}Sign Up
           </Text>
         </Text>
+        <WarningModal
+          visible={showWarning}
+          message={warningMsg}
+          onConfirm={() => setShowWarning(false)}
+        />
+
       </View>
     </>
   );

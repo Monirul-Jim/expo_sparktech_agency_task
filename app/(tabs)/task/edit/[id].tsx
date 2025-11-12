@@ -1,4 +1,13 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    TextInput,
+    ActivityIndicator,
+    ScrollView,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
 import { useGetSingleTaskQuery } from "@/redux/api/taskApi";
@@ -6,7 +15,9 @@ import { useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm, Controller } from "react-hook-form";
-import React from "react";
+import WarningModal from "@/components/WarningModal/WarningModal"; // ✅ modal component
+import SuccessModal from "@/components/SuccessModal/SuccessModal";
+
 type FormValues = {
     title: string;
     description: string;
@@ -18,15 +29,15 @@ export default function EditTask() {
 
     const { data, isLoading } = useGetSingleTaskQuery(id, { skip: !token });
 
-    const { control, handleSubmit, reset } = useForm<FormValues>({
+    const { control, handleSubmit, reset, getValues } = useForm<FormValues>({
         defaultValues: {
             title: "",
             description: "",
         },
     });
 
-    // Load data into form when fetched
-    React.useEffect(() => {
+    // Load task data into form
+    useEffect(() => {
         if (data?.data) {
             reset({
                 title: data.data.title,
@@ -35,8 +46,24 @@ export default function EditTask() {
         }
     }, [data]);
 
-    const onSubmit = async (formData: FormValues) => {
-        console.log('something doing', formData)
+    // Modal state
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+    // Confirm update
+    const handleConfirm = async () => {
+        setShowConfirmModal(false);
+        const formData = getValues();
+
+        try {
+            setShowSuccessModal(true);
+        } catch (err: any) {
+            alert(err?.data?.message || "Failed to update task");
+        }
+    };
+
+    const onSubmit = () => {
+        setShowConfirmModal(true);
     };
 
     if (isLoading) {
@@ -49,13 +76,31 @@ export default function EditTask() {
 
     return (
         <SafeAreaView style={styles.container}>
+            {/* Confirmation Modal */}
+            <WarningModal
+                visible={showConfirmModal}
+                message="Are you sure you want to update this task?"
+                onConfirm={handleConfirm}
+                onCancel={() => setShowConfirmModal(false)}
+            />
+
+            {/* Success Modal */}
+            <SuccessModal
+                visible={showSuccessModal}
+                message="Task updated successfully."
+                onOk={() => {
+                    setShowSuccessModal(false);
+                    router.push("/"); // navigate to home
+                }}
+            />
+
             {/* Header */}
             <View style={styles.header}>
-                   <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-                     <Ionicons name="chevron-back" size={22} color="#7ED957" />
-                   </TouchableOpacity>
-                   <Text style={styles.headerTitle}>Tasks Details</Text>
-                 </View>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+                    <Ionicons name="chevron-back" size={22} color="#7ED957" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Edit Task</Text>
+            </View>
 
             <ScrollView contentContainerStyle={{ padding: 18 }}>
                 {/* Task Title */}
@@ -80,7 +125,7 @@ export default function EditTask() {
                     name="description"
                     render={({ field: { onChange, value } }) => (
                         <TextInput
-                            placeholder="e.g. Include logo, navigation, and CTA button with brand color"
+                            placeholder="e.g. Include logo, navigation, and CTA button"
                             style={[styles.input, styles.textArea]}
                             multiline
                             value={value}
@@ -90,12 +135,14 @@ export default function EditTask() {
                 />
 
                 {/* Update Button */}
-                <TouchableOpacity style={styles.updateBtn} onPress={handleSubmit(onSubmit)}>
+                <TouchableOpacity
+                    style={styles.updateBtn}
+                    onPress={handleSubmit(onSubmit)}
+                >
 
                     <Text style={styles.updateText}>Update Task</Text>
 
                 </TouchableOpacity>
-
             </ScrollView>
         </SafeAreaView>
     );
