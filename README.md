@@ -15,7 +15,7 @@ A mobile application built using **Expo**, **React Native**, and **Redux Toolkit
 - Upload & update profile image
 - RTK Query for API calls
 - React Hook Form for form handling
-- Task Management: Create, Read, Update, Delete (CRUD) tasks
+- Task Management: User Create, Read, Update, Delete (CRUD) tasks
 - Onboarding screens, splash screen, and adaptive icons
 ---
 

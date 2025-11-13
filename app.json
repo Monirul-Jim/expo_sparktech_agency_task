@@ -40,6 +40,14 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
       ]
     ],
     "experiments": {
@@ -49,7 +57,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "768d8cfb-b1b1-4a32-a0cd-0f5eb08b3d65"
+        "projectId": "d3a06d5c-3b14-467d-8952-9b2a713996ef"
       }
     },
     "owner": "emon_01"
